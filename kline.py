@@ -10,14 +10,12 @@ import time
 
 
 def get_timestamp(date):
-    # Define the start and end times for the data
-    #end_time = datetime.datetime.now()
-    #start_time = end_time - datetime.timedelta(days=2)
-
-    # Convert the times to Unix timestamps in milliseconds
-    #start_timestamp = int(start_time.timestamp() * 1000)
-    #end_timestamp = int(end_time.timestamp() * 1000)
+    """
+    16:00(T-1) --> 16:00 (T) in our file.
     
+    UTC-0, instead of UTC-8.
+
+    """
     e = pd.Timestamp(f"{date} 8:00:00")
     s = e - datetime.timedelta(hours=24)
 
@@ -35,7 +33,6 @@ def get_klines(symbol, start_timestamp, end_timestamp, interval=None, endpoint=N
         endpoint = 'https://api.binance.com/api/v3/klines'
 
     # Define the parameters for the API request
-    # symbol = 'BTCUSDT'
     if not interval:
         interval = '15m'
     limit = 1000
@@ -55,17 +52,6 @@ def get_klines(symbol, start_timestamp, end_timestamp, interval=None, endpoint=N
     return data
 
 
-def convert_to_df(data):
-    # Create a pandas dataframe with the OHLC data and timestamps
-    ohlc_data = [[float(kline[1]), float(kline[2]), float(kline[3]), float(kline[4])] for kline in data]
-    df = pd.DataFrame(ohlc_data, columns=['Open', 'High', 'Low', 'Close'])
-    timestamps = [datetime.datetime.fromtimestamp(int(kline[0]) / 1000) for kline in data]
-    df['Timestamp'] = timestamps
-    df.set_index('Timestamp', inplace=True)
-
-    return df
-
-
 def convert_to_df2(data):
     columns = [
     'Open time', 'Open', 'High', 'Low', 'Close', 'Volume',
@@ -76,11 +62,10 @@ def convert_to_df2(data):
 
     df = pd.DataFrame(data, columns=columns)
 
-
     return df
     
 
-def main(symbol, date='20240420', kline=None, inst_type='SPOT', exchg='Binance'):
+def fetch_kline(symbol, date='20240420', kline=None, inst_type='SPOT', exchg='Binance'):
 
     s, e = get_timestamp(date) 
 
@@ -110,5 +95,5 @@ if __name__=="__main__":
         date = '20240402'
         inst_type = 'SPOT'
 
-    main(symbol, date, kline, inst_type)
+    fetch_kline(symbol, date, kline, inst_type)
     
