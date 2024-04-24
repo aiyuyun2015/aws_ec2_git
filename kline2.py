@@ -6,6 +6,8 @@ import requests
 import json
 import pandas as pd
 import numpy as np
+import time
+
 
 def get_timestamp(date):
     # Define the start and end times for the data
@@ -22,20 +24,20 @@ def get_timestamp(date):
     start_timestamp = mt.reverse_datetime_to_int(s)
     end_timestamp = mt.reverse_datetime_to_int(e)
 
-
     return start_timestamp, end_timestamp
 
 
-def get_klines(symbol, start_timestamp, end_timestamp):
+def get_klines(symbol, start_timestamp, end_timestamp, interval=None, endpoint=None):
    
 
     # Define the Binance API endpoint for K-line data
-    
-    endpoint = 'https://api.binance.com/api/v3/klines'
+    if not endpoint:    
+        endpoint = 'https://api.binance.com/api/v3/klines'
 
     # Define the parameters for the API request
     # symbol = 'BTCUSDT'
-    interval = '15m'
+    if not interval:
+        interval = '15m'
     limit = 1000
     params = {'symbol': symbol, 'interval': interval, 'startTime': start_timestamp, 'endTime': end_timestamp, 'limit': limit}
 
@@ -78,13 +80,12 @@ def convert_to_df2(data):
     return df
     
 
-
-def main(symbol, date='20240420'):
-    #s, e = '2023-01-01 00:00:00', '2024-04-22 00:00:00'
-    # symbol = 'BTCUSDT'
+def main(symbol, date='20240420', kline=None, inst_type='SPOT', exchg='Binance'):
 
     s, e = get_timestamp(date) 
-    data = get_klines(symbol, s, e)    
+
+    url = mt.get_basepoint(exchg, inst_type) + '/klines'
+    data = get_klines(symbol, s, e, kline)    
     try:
         df = convert_to_df2(data)
     except Exception as e:
@@ -92,19 +93,22 @@ def main(symbol, date='20240420'):
         print("[Error] faield to convert to df")
         raise e
 
-    mt.write(df, f'./data/kline/{symbol}/{date}.csv', index=True)
+    mt.write(df, f'./data/{kline}/{exchg}/{symbol}-{inst_type}/{date}.csv', index=True)
 
     
-
 if __name__=="__main__":
     params = mt.get_parsers()
     debug = params.debug
     symbol = params.input
     kline = params.kline
     date = str(params.date)
+    inst_type = params.inst_type
 
+    if debug:
+        symbol = 'BTCUSDT'
+        kline = '15m'
+        date = '20240402'
+        inst_type = 'SPOT'
 
-    main(symbol, date)
+    main(symbol, date, kline, inst_type)
     
-
-
