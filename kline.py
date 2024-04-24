@@ -1,4 +1,4 @@
-import requests, sys
+import requests, sys, os
 sys.path += ['/home/ec2-user/tools']
 import MyTools as mt
 import datetime
@@ -25,18 +25,19 @@ def get_timestamp(date):
     return start_timestamp, end_timestamp
 
 
-def get_klines(symbol, start_timestamp, end_timestamp, interval=None, endpoint=None):
+def get_klines(symbol, start_timestamp, end_timestamp, kline=None, endpoint=None):
    
 
     # Define the Binance API endpoint for K-line data
-    if not endpoint:    
-        endpoint = 'https://api.binance.com/api/v3/klines'
-
+    #if not endpoint:    
+    #    endpoint = 'https://api.binance.com/api/v3/klines'
+    print("Use endpoing:==>", endpoint)
+    
     # Define the parameters for the API request
-    if not interval:
-        interval = '15m'
+    if not kline:
+        kline = '15m'
     limit = 1000
-    params = {'symbol': symbol, 'interval': interval, 'startTime': start_timestamp, 'endTime': end_timestamp, 'limit': limit}
+    params = {'symbol': symbol, 'interval': kline, 'startTime': start_timestamp, 'endTime': end_timestamp, 'limit': limit}
 
     # Send the API request and store the response data in a list
     data = []
@@ -65,12 +66,17 @@ def convert_to_df2(data):
     return df
     
 
-def fetch_kline(symbol, date='20240420', kline=None, inst_type='SPOT', exchg='Binance'):
+def fetch_kline(symbol, date=None, kline=None, inst_type=None, exchg='Binance', debug=False):
+    
+    ofile = f'./data/{kline}/{exchg}/{symbol}-{inst_type}/{date}.csv'
+    if os.path.exists(ofile) and not debug:
+        print(f'[Warning] file {ofile} exists, skip..')
+        return 
 
     s, e = get_timestamp(date) 
 
-    url = mt.get_basepoint(exchg, inst_type) + '/klines'
-    data = get_klines(symbol, s, e, kline)    
+    url = mt.get_basepoint(exchg, inst_type) + 'klines'
+    data = get_klines(symbol, s, e, kline, url)    
     try:
         df = convert_to_df2(data)
     except Exception as e:
@@ -78,7 +84,7 @@ def fetch_kline(symbol, date='20240420', kline=None, inst_type='SPOT', exchg='Bi
         print("[Error] faield to convert to df")
         raise e
 
-    mt.write(df, f'./data/{kline}/{exchg}/{symbol}-{inst_type}/{date}.csv', index=True)
+    mt.write(df, ofile, index=True)
 
     
 if __name__=="__main__":
@@ -93,7 +99,7 @@ if __name__=="__main__":
         symbol = 'BTCUSDT'
         kline = '15m'
         date = '20240402'
-        inst_type = 'SPOT'
+        inst_type = 'UFUTURE'
 
-    fetch_kline(symbol, date, kline, inst_type)
+    fetch_kline(symbol, date, kline, inst_type, exchg='Binance', debug=debug)
     
