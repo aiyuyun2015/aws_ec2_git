@@ -15,18 +15,18 @@ from datetime import datetime
 
 def main():
     # 1. get BTC data
-    start_date = datetime(2023, 1, 1)
+    start_date = datetime(2016, 1, 1)
     end_date = datetime(2024, 4, 24)
 
     dates = mt.get_dates(start_date, end_date)
-    s = 'BTCUSDT'
+    s = 'ETHUSDT'
     k = '1m'
     #print(dates)
     #exit(0)
     
-    for date in dates:
+    #for date in dates:
     
-        fetch_kline(s, date, kline=k, inst_type='SPOT')
+    #    fetch_kline(s, date, kline=k, inst_type='SPOT')
     
     for date in dates:
         fetch_kline(s, date, kline=k, inst_type='UFUTURE')

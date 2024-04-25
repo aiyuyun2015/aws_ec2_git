@@ -53,16 +53,33 @@ def get_klines(symbol, start_timestamp, end_timestamp, kline=None, endpoint=None
             print("X-MBX-USED-WEIGHT-1m header not found in response.")
 
 
+        # Back-off mechanism
+        if response.status_code == 429 or response.status_code == 418:
+            print("Too Many Requests. Backing off...")
+            print("Used weight:", response.headers.get('X-MBX-USED-WEIGHT-1m'))
+            retry_after = int(response.headers.get('Retry-After', '10')) 
+            print(f"Received {response.status_code} - Too Many Requests or IP Ban. Waiting for {retry_after} seconds before retrying...")
 
-        klines = json.loads(response.text)
-        data += klines
-        if len(klines) < limit:
-            break
-        params['startTime'] = int(klines[-1][0]) + 1
-        if used_weight > 300:
-            time.sleep(15 * 60)
-        else:
-            time.sleep(0.1)
+            wait_time = max(30, 2* retry_after) # Wait at least 30 seconds, or 2 * suggested, to avoid getting banned.
+
+            time.sleep(wait_time)
+        
+        elif response.status_code == 200:
+            print("Request successful")
+
+            klines = json.loads(response.text)
+            data += klines
+            if len(klines) < limit:
+                break
+            params['startTime'] = int(klines[-1][0]) + 1
+            
+       
+            #if used_weight > 300:
+            #    time.sleep(15 * 60)
+            #else:
+            #    time.sleep(0.1)
+        
+
     return data
 
 

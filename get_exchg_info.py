@@ -3,17 +3,18 @@ sys.path += ['/home/ec2-user/tools']
 import MyTools as mt
 
 
-def get_exchg():
+def get_exchg(inst_type):
     # ofile
 
-    ofile = './data/test-spot.json'
+    ofile = f'./data/ExchangeInof_{inst_type}.json'
 
     # Define the endpoint URL
     
-    url = "https://fapi.binance.com/fapi/v1/exchangeInfo"
+    bp = mt.get_basepoint('Binance', inst_type)
+    url = f"{bp}exchangeInfo"
 
 
-    url = "https://api.binance.com/api/v3/exchangeInfo"
+    #url = f"{bp}exchangeInfo"
 
     # Make the GET request
     response = requests.get(url)
@@ -46,10 +47,10 @@ def get_exchg():
 
 
 def main():
-    get_exchg()
+    get_exchg('SPOT')
+    get_exchg('UFUTURE')
 
     
-
 
 
 if __name__=="__main__":
