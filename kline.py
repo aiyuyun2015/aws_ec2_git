@@ -47,7 +47,20 @@ def get_klines(symbol, start_timestamp, end_timestamp, kline=None, endpoint=None
     # Send the API request and store the response data in a list
     data = []
     while True:
-        response = requests.get(endpoint, params=params)
+
+        try:
+            response = requests.get(endpoint, params=params)
+        
+        except KeyboardInterrupt:
+            raise
+
+        except Exception as e:
+            print(e)
+            print("In-production mode, we wait longer")
+            time.sleep(10 * 60)
+            continue
+
+
         used_weight_header = response.headers.get('X-MBX-USED-WEIGHT-1m')
         if used_weight_header is not None:
             # Parse the used weight value
@@ -80,10 +93,6 @@ def get_klines(symbol, start_timestamp, end_timestamp, kline=None, endpoint=None
         else:
             print(f"Unknown error code: {response.status_code}")
             print(endpoint, params)
-            #if used_weight > 300:
-            #    time.sleep(15 * 60)
-            #else:
-            #    time.sleep(0.1)
         
 
     return data
