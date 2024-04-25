@@ -24,12 +24,12 @@ def main():
     #print(dates)
     #exit(0)
     
-    #for date in dates:
-    
-    #    fetch_kline(s, date, kline=k, inst_type='SPOT')
-    
     for date in dates:
-        fetch_kline(s, date, kline=k, inst_type='UFUTURE')
+    
+        fetch_kline(s, date, kline=k, inst_type='SPOT')
+    
+    #for date in dates:
+    #    fetch_kline(s, date, kline=k, inst_type='UFUTURE')
         #time.sleep(1)
 
 if __name__=="__main__":
