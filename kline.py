@@ -29,6 +29,10 @@ def get_timestamp(date):
 def get_klines(symbol, start_timestamp, end_timestamp, kline=None, endpoint=None):
    
 
+    # 1. sanity check
+    if end_timestamp < start_timestamp:
+        raise ValueError
+
     # Define the Binance API endpoint for K-line data
     #if not endpoint:    
     #    endpoint = 'https://api.binance.com/api/v3/klines'
@@ -73,7 +77,9 @@ def get_klines(symbol, start_timestamp, end_timestamp, kline=None, endpoint=None
                 break
             params['startTime'] = int(klines[-1][0]) + 1
             
-       
+        else:
+            print(f"Unknown error code: {response.status_code}")
+            print(endpoint, params)
             #if used_weight > 300:
             #    time.sleep(15 * 60)
             #else:
