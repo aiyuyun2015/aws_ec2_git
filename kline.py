@@ -1,5 +1,6 @@
 import requests, sys, os
-sys.path += ['/home/ec2-user/tools']
+MT_PATH = os.environ.get("MT_PATH") 
+sys.path += [MT_PATH]
 import MyTools as mt
 import datetime
 import requests
@@ -43,13 +44,25 @@ def get_klines(symbol, start_timestamp, end_timestamp, kline=None, endpoint=None
     data = []
     while True:
         response = requests.get(endpoint, params=params)
+        used_weight_header = response.headers.get('X-MBX-USED-WEIGHT-1m')
+        if used_weight_header is not None:
+            # Parse the used weight value
+            used_weight = int(used_weight_header)
+            print("Used weight:", used_weight)
+        else:
+            print("X-MBX-USED-WEIGHT-1m header not found in response.")
+
+
+
         klines = json.loads(response.text)
         data += klines
         if len(klines) < limit:
             break
         params['startTime'] = int(klines[-1][0]) + 1
-        time.sleep(0.1)
-
+        if used_weight > 300:
+            time.sleep(15 * 60)
+        else:
+            time.sleep(0.1)
     return data
 
 
@@ -97,7 +110,7 @@ if __name__=="__main__":
 
     if debug:
         symbol = 'BTCUSDT'
-        kline = '15m'
+        kline = '1m'
         date = '20240402'
         inst_type = 'UFUTURE'
 
